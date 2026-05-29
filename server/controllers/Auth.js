@@ -183,7 +183,7 @@ const deleteOtp = await OTP.deleteMany({ email })
         return res.status(200).json({
             success: true,
             message: "User registered successfully",
-            user
+            user:response
         });
 
     } catch (error) {
