@@ -6,6 +6,8 @@ const Profile = require("../models/profile")
 const jwt = require("jsonwebtoken")
 const cookie = require("cookie-parser")
 const user = require("../models/user")
+const cloudinary = require("cloudinary").v2
+
 
 require("dotenv").config()
 
@@ -218,7 +220,6 @@ exports.login = async (req,res)=>{
             })
         }
 //user existence done
-console.log("208line is running");
 
 //password match and generate jwt token
 if(await bcrypt.compare(password,user.password)){
@@ -268,21 +269,93 @@ res.cookie("token",token,options).status(200).json({
     }
 }
 
-exports.deleteAccount = async (req,res)=>{
-    try{
-        const userId = req.user.id;
+//delete account
+exports.deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user.id
 
-        await User.findByIdAndDelete(userId);
-        await Profile
-        return res.status(200).json({
-            success:true,
-            message:"Account deleted successfully"
-        })
-    }catch (error) {
-        console.error(error)
-        return res.status(500).json({
-            success: false,
-            message:error.message
-        })
+    const user = await User.findById(userId)
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      })
     }
+
+    if (user.publicIdForImage) {
+      try {
+        await cloudinary.uploader.destroy(user.publicIdForImage, {
+          resource_type: "image",
+        })
+      } catch (error) {
+        console.error("Failed to delete profile image:", error)
+      }
+    }
+
+    await Profile.findByIdAndDelete(user.additionalDetails)
+    await User.findByIdAndDelete(userId)
+
+    return res.status(200).json({
+      success: true,
+      message: "Account deleted successfully",
+    })
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    })
+  }
+}
+
+
+exports.changePassword = async (req, res) => {
+  try {
+    const userId = req.user.id
+    const { oldPassword, newPassword } = req.body
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      })
+    }
+
+    const user = await User.findById(userId)
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      })
+    }
+
+    const isPasswordMatch = await bcrypt.compare(oldPassword, user.password)
+
+    if (!isPasswordMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Current password is incorrect",
+      })
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+    await User.findByIdAndUpdate(
+      userId,
+      { password: hashedPassword },
+      { new: true }
+    )
+
+    return res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+    })
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Could not update password",
+    })
+  }
 }

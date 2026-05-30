@@ -2,8 +2,8 @@ import {toast} from "react-hot-toast"
 import { apiConnector } from '../apiconnector';
 import { catalogData } from '../apis';
 
-export const getCatalogaPageData = async(categoryId) => {
-  const toastId = toast.loading("Loading...");
+export const getCatalogaPageData = async(categoryId, { showToast = true } = {}) => {
+  const toastId = showToast ? toast.loading("Loading...") : null;
   let result = [];
   try{
         const response = await apiConnector("POST", catalogData.CATALOGPAGEDATA_API, 
@@ -20,6 +20,6 @@ export const getCatalogaPageData = async(categoryId) => {
     toast.error(error.message);
     result = error.response?.data;
   }
-  toast.dismiss(toastId);
+  if (toastId) toast.dismiss(toastId);
   return result;
 }

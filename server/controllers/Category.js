@@ -1,6 +1,25 @@
 const Category = require("../models/category")
 const Course = require("../models/course")
 
+const DEFAULT_CATEGORIES = [
+    {
+        name: "Data Science",
+        description: "Learn data analysis, statistics, machine learning, and practical data workflows.",
+    },
+]
+
+const ensureDefaultCategories = async () => {
+    for (const category of DEFAULT_CATEGORIES) {
+        const existingCategory = await Category.findOne({
+            name: { $regex: `^${category.name}$`, $options: "i" },
+        })
+
+        if (!existingCategory) {
+            await Category.create(category)
+        }
+    }
+}
+
 //create categories
 exports.createCategory = async (req, res) => {
     try {
@@ -10,6 +29,18 @@ exports.createCategory = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: "All fields are required"
+            })
+        }
+
+        const existingCategory = await Category.findOne({
+            name: { $regex: `^${name}$`, $options: "i" },
+        })
+
+        if (existingCategory) {
+            return res.status(200).json({
+                success: true,
+                message: "Category already exists",
+                data: existingCategory,
             })
         }
 
@@ -35,11 +66,13 @@ exports.createCategory = async (req, res) => {
 //get all categories
 exports.getAllCategories = async (req, res) => {
     try {
+        await ensureDefaultCategories()
+
         const allCategories = await Category.find({})
 
         if (allCategories.length == 0) {
-            return res.status(404).json({
-                success: false,
+            return res.status(200).json({
+                success: true,
                 message: "No categories found",
                 data: allCategories
             });
@@ -68,7 +101,11 @@ exports.particularCategoryDetails = async (req, res) => {
         const existingCategory = await Category.findById(categoryId)
             .populate({
                 path: "courses",
-                select: "courseName"
+                match: { status: "Published" },
+                populate: [
+                    { path: "instructor" },
+                    { path: "ratingAndReviews" },
+                ],
             })
 
         if (!existingCategory) {
@@ -82,38 +119,31 @@ exports.particularCategoryDetails = async (req, res) => {
         const diffCategories = await Category.find({ _id: { $ne: categoryId } })
             .populate({
                 path: "courses",
-                select: "courseName"
+                match: { status: "Published" },
+                populate: [
+                    { path: "instructor" },
+                    { path: "ratingAndReviews" },
+                ],
 
             })
 
         //get top 10 selling courses
-        const topSellingCourses = await Course.aggregate([
-            {
-                $addFields: {
-                    totalStudents: { $size: "$studentsEnrolled" }
-                }
-            },
-            {
-                $sort: { totalStudents: -1 }
-            },
-            {
-                $limit: 10
-            },
-            {
-                $project: {
-                    courseName: 1,
-                    price: 1,
-                    totalStudents: 1
-                }
-            }
-        ]);
+        const topSellingCourses = await Course.find({ status: "Published" })
+            .populate("instructor")
+            .populate("ratingAndReviews")
+            .sort({ studentsEnrolled: -1 })
+            .limit(10)
+
         return res.status(200).json(({
             success: true,
             message: "courses are returned for particular category",
             data: {
-                existingCategory: existingCategory,
-                diffCategories: diffCategories,
-                topSellingCourses   :topSellingCourses   
+                selectedCategory: existingCategory,
+                differentCategory:
+                    diffCategories?.find((category) => category.courses?.length) ||
+                    diffCategories?.[0] ||
+                    null,
+                mostSellingCourses: topSellingCourses,
             }
         }))
     } catch (e) {

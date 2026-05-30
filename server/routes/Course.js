@@ -10,9 +10,9 @@ const {
   getAllCourses,
   getParticularCourseDetails,
   // getFullCourseDetails,
-  // editCourse,
-  // getInstructorCourses,
-  // deleteCourse,
+  editCourse,
+  getInstructorCourses,
+  deleteCourse,
 } = require("../controllers/createCourse")
 
 
@@ -63,6 +63,7 @@ router.get("/getAllCourses", getAllCourses)
 
 // Get Details for a Specific Courses
 router.post("/getParticularCourseDetails", getParticularCourseDetails)
+router.post("/getCourseDetails", getParticularCourseDetails)
 
 //Add a Section to a Course
 router.post("/createSection", auth, isInstructor, createSection)
@@ -85,17 +86,18 @@ router.delete("/deleteSubSection", auth, isInstructor, deleteSubSection)
 
 
 
-// Get Details for a Specific Courses
-// router.post("/getFullCourseDetails", auth, getFullCourseDetails)
+// Get Details for a Specific Course in the instructor edit flow
+router.post("/getFullCourseDetails", auth, getParticularCourseDetails)
 
 // Edit Course routes
-// router.post("/editCourse", auth, isInstructor, editCourse)
+router.post("/editCourse", auth, isInstructor, editCourse)
+router.post("/updateCourseStatus", auth, isInstructor, editCourse)
 
 // Get all Courses Under a Specific Instructor
-// router.get("/getInstructorCourses", auth, isInstructor, getInstructorCourses)
+router.get("/getInstructorCourses", auth, isInstructor, getInstructorCourses)
 
 // Delete a Course
-// router.delete("/deleteCourse", deleteCourse)
+router.delete("/deleteCourse", auth, isInstructor, deleteCourse)
 
 // router.post("/updateCourseProgress", auth, isStudent, updateCourseProgress);
 
@@ -106,6 +108,7 @@ router.delete("/deleteSubSection", auth, isInstructor, deleteSubSection)
 // TODO: Put IsAdmin Middleware here
 router.post("/createCategory", auth, isAdmin, createCategory)
 router.get("/getAllCategories", getAllCategories)
+router.get("/showAllCategories", getAllCategories)
 router.post("/getCategoryPageDetails", particularCategoryDetails)
 
 // ********************************************************************************************************

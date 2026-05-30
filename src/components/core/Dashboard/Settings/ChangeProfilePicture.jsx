@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { FiUpload } from "react-icons/fi"
 import { useDispatch, useSelector } from "react-redux"
+import { toast } from "react-hot-toast"
 
 import { updateDisplayPicture } from "../../../../services/operations/SettingsAPI"
 import IconBtn from "../../../common/IconBtn"
@@ -17,11 +18,11 @@ export default function ChangeProfilePicture() {
   const fileInputRef = useRef(null)
 
   const handleClick = () => {
-    fileInputRef.current.click()
+    fileInputRef.current?.click()
   }
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files?.[0]
     // console.log(file)
     if (file) {
       setImageFile(file)
@@ -39,6 +40,10 @@ export default function ChangeProfilePicture() {
 
   const handleFileUpload = () => {
     try {
+      if (!imageFile) {
+        toast.error("Please select an image first")
+        return
+      }
       console.log("uploading...")
       setLoading(true)
       const formData = new FormData()
@@ -77,6 +82,7 @@ export default function ChangeProfilePicture() {
                 accept="image/png, image/gif, image/jpeg"
               />
               <button
+                type="button"
                 onClick={handleClick}
                 disabled={loading}
                 className="cursor-pointer rounded-md bg-richblack-700 py-2 px-5 font-semibold text-richblack-50"
@@ -86,6 +92,7 @@ export default function ChangeProfilePicture() {
               <IconBtn
                 text={loading ? "Uploading..." : "Upload"}
                 onclick={handleFileUpload}
+                disabled={loading || !imageFile}
               >
                 {!loading && (
                   <FiUpload className="text-lg text-richblack-900" />

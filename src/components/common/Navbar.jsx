@@ -9,6 +9,7 @@ import { NavbarLinks } from "../../data/navbar-links"
 import { apiConnector } from "../../services/apiconnector"
 import { categories } from "../../services/apis"
 import { ACCOUNT_TYPE } from "../../utils/constants"
+import { slugify } from "../../utils/slugify"
 import ProfileDropdown from "../core/Auth/ProfileDropDown"
 
 function Navbar() {
@@ -72,16 +73,26 @@ function Navbar() {
                           <p className="text-center">Loading...</p>
                         ) : (subLinks && subLinks.length) ? (
                           <>
+                            <Link
+                              to="/catalog"
+                              className="rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50"
+                            >
+                              <p>All Courses</p>
+                            </Link>
+                            {!subLinks.some(
+                              (subLink) => slugify(subLink.name) === "data-science"
+                            ) && (
+                              <Link
+                                to="/catalog/data-science"
+                                className="rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50"
+                              >
+                                <p>Data Science</p>
+                              </Link>
+                            )}
                             {subLinks
-                              ?.filter(
-                                (subLink) => subLink?.courses?.length > 0
-                              )
                               ?.map((subLink, i) => (
                                 <Link
-                                  to={`/catalog/${subLink.name
-                                    .split(" ")
-                                    .join("-")
-                                    .toLowerCase()}`}
+                                  to={`/catalog/${slugify(subLink.name)}`}
                                   className="rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50"
                                   key={i}
                                 >
@@ -137,6 +148,13 @@ function Navbar() {
                 Sign up
               </button>
             </Link>
+          )}
+          {token !== null && user?.accountType && (
+            <span className="flex h-9 items-center rounded-lg border border-yellow-700 bg-richblack-800 text-sm">
+              <span className="px-3 font-semibold text-yellow-50">
+                {user.accountType}
+              </span>
+            </span>
           )}
           {token !== null && <ProfileDropdown />}
         </div>

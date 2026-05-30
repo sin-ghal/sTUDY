@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { useDropzone } from "react-dropzone"
 import { FiUploadCloud } from "react-icons/fi"
 
@@ -19,8 +19,6 @@ export default function Upload({
   const [previewSource, setPreviewSource] = useState(
     viewData ? viewData : editData ? editData : ""
   )
-  const inputRef = useRef(null)
-
   const onDrop = (acceptedFiles) => {
     const file = acceptedFiles[0]
     if (file) {
@@ -50,7 +48,7 @@ export default function Upload({
   }, [name, register])
 
   useEffect(() => {
-    setValue(name, selectedFile)
+    setValue(name, selectedFile, { shouldValidate: true })
   }, [name, selectedFile, setValue])
 
   return (
@@ -80,7 +78,7 @@ export default function Upload({
                 onClick={() => {
                   setPreviewSource("")
                   setSelectedFile(null)
-                  setValue(name, null)
+                  setValue(name, null, { shouldValidate: true })
                 }}
                 className="mt-3 text-richblack-400 underline"
               >
@@ -93,7 +91,7 @@ export default function Upload({
             className="flex w-full flex-col items-center p-6"
             {...getRootProps()}
           >
-            <input {...getInputProps()} ref={inputRef} />
+            <input {...getInputProps()} />
             <div className="grid aspect-square w-14 place-items-center rounded-full bg-pure-greys-800">
               <FiUploadCloud className="text-2xl text-yellow-50" />
             </div>

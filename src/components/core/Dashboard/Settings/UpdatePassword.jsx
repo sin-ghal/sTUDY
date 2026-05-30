@@ -17,13 +17,20 @@ export default function UpdatePassword() {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm()
 
   const submitPasswordForm = async (data) => {
     // console.log("password Data - ", data)
     try {
-      await changePassword(token, data)
+      const success = await changePassword(token, data)
+      if (success) {
+        reset({
+          oldPassword: "",
+          newPassword: "",
+        })
+      }
     } catch (error) {
       console.log("ERROR MESSAGE - ", error.message)
     }

@@ -36,6 +36,28 @@ export default function SubSectionModal({
   const { token } = useSelector((state) => state.auth)
   const { course } = useSelector((state) => state.course)
 
+  const getVideoDuration = (file) =>
+    new Promise((resolve) => {
+      if (!(file instanceof File)) {
+        resolve(modalData?.timeDuration || "0")
+        return
+      }
+
+      const video = document.createElement("video")
+      const objectUrl = URL.createObjectURL(file)
+
+      video.preload = "metadata"
+      video.onloadedmetadata = () => {
+        URL.revokeObjectURL(objectUrl)
+        resolve(Math.round(video.duration).toString())
+      }
+      video.onerror = () => {
+        URL.revokeObjectURL(objectUrl)
+        resolve("0")
+      }
+      video.src = objectUrl
+    })
+
   useEffect(() => {
     if (view || edit) {
       // console.log("modalData", modalData)
@@ -67,12 +89,12 @@ export default function SubSectionModal({
     // console.log("Values After Editing form values:", currentValues)
     formData.append("sectionId", modalData.sectionId)
     formData.append("subSectionId", modalData._id)
-    if (currentValues.lectureTitle !== modalData.title) {
-      formData.append("title", currentValues.lectureTitle)
-    }
-    if (currentValues.lectureDesc !== modalData.description) {
-      formData.append("description", currentValues.lectureDesc)
-    }
+    formData.append("title", currentValues.lectureTitle)
+    formData.append("description", currentValues.lectureDesc)
+    formData.append(
+      "timeDuration",
+      await getVideoDuration(currentValues.lectureVideo)
+    )
     if (currentValues.lectureVideo !== modalData.videoUrl) {
       formData.append("video", currentValues.lectureVideo)
     }
@@ -108,6 +130,7 @@ export default function SubSectionModal({
     formData.append("sectionId", modalData)
     formData.append("title", data.lectureTitle)
     formData.append("description", data.lectureDesc)
+    formData.append("timeDuration", await getVideoDuration(data.lectureVideo))
     formData.append("video", data.lectureVideo)
     setLoading(true)
     const result = await createSubSection(formData, token)

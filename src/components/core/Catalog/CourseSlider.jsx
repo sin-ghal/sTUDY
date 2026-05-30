@@ -31,7 +31,9 @@ const CourseSlider = ({Courses}) => {
           ))}
         </Swiper>
       ) : (
-        <p className="text-xl text-richblack-5">No Course Found</p>
+        <p className="rounded-md border border-yellow-100/30 bg-richblack-800 px-6 py-5 text-3xl font-semibold text-yellow-50 shadow-[0_0_24px_rgba(255,214,10,0.08)]">
+          No Course Found
+        </p>
       )}
     </>
   )

@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
 
 import { login } from "../../../services/operations/authAPI"
@@ -8,6 +8,7 @@ import { login } from "../../../services/operations/authAPI"
 function LoginForm() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const { loading } = useSelector((state) => state.auth)
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -26,7 +27,14 @@ function LoginForm() {
 
   const handleOnSubmit = (e) => {
     e.preventDefault()
-    dispatch(login(email, password, navigate))
+    const form = new FormData(e.currentTarget)
+    dispatch(
+      login(
+        form.get("email")?.trim(),
+        form.get("password"),
+        navigate
+      )
+    )
   }
 
   return (
@@ -85,9 +93,10 @@ function LoginForm() {
       </label>
       <button
         type="submit"
-        className="mt-6 rounded-[8px] bg-yellow-50 py-[8px] px-[12px] font-medium text-richblack-900"
+        disabled={loading}
+        className="mt-6 rounded-[8px] bg-yellow-50 py-[8px] px-[12px] font-medium text-richblack-900 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        Sign In
+        {loading ? "Signing In..." : "Sign In"}
       </button>
     </form>
   )

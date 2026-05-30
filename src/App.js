@@ -2,6 +2,7 @@ import "./App.css";
 import {Route, Routes } from "react-router-dom";
 import Home from "./pages/Home"
 import Navbar from "./components/common/Navbar"
+import ScrollToTop from "./components/common/ScrollToTop";
 import OpenRoute from "./components/core/Auth/OpenRoute"
 
 import Login from "./pages/Login"
@@ -36,9 +37,11 @@ function App() {
 
   return (
    <div className="w-screen min-h-screen bg-richblack-900 flex flex-col font-inter">
+    <ScrollToTop />
     <Navbar/>
     <Routes>
       <Route path="/" element={<Home/>} />
+      <Route path="catalog" element={<Catalog/>} />
       <Route path="catalog/:catalogName" element={<Catalog/>} />
       <Route path="courses/:courseId" element={<CourseDetails/>} />
       

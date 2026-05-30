@@ -23,70 +23,105 @@ function ReviewSlider() {
 
   useEffect(() => {
     ;(async () => {
-      const { data } = await apiConnector(
-        "GET",
-        ratingsEndpoints.REVIEWS_DETAILS_API
-      )
-      if (data?.success) {
-        setReviews(data?.data)
+      try {
+        const { data } = await apiConnector(
+          "GET",
+          ratingsEndpoints.REVIEWS_DETAILS_API
+        )
+        if (data?.success) {
+          setReviews(data?.data || [])
+        }
+      } catch (error) {
+        setReviews([])
       }
     })()
   }, [])
 
   // console.log(reviews)
 
+  if (!reviews.length) {
+    return (
+      <div className="my-10 w-full text-center text-sm text-richblack-300">
+        No reviews yet.
+      </div>
+    )
+  }
+
   return (
-    <div className="text-white">
-      <div className="my-[50px] h-[184px] max-w-maxContentTab lg:max-w-maxContent">
+    <div className="w-full text-white">
+      <div className="my-10 w-full max-w-maxContentTab lg:max-w-maxContent">
         <Swiper
-          slidesPerView={4}
-          spaceBetween={25}
+          slidesPerView={1}
+          spaceBetween={18}
           loop={true}
           freeMode={true}
           autoplay={{
             delay: 2500,
             disableOnInteraction: false,
           }}
+          breakpoints={{
+            640: {
+              slidesPerView: 2,
+              spaceBetween: 18,
+            },
+            1024: {
+              slidesPerView: 3,
+              spaceBetween: 22,
+            },
+            1280: {
+              slidesPerView: 4,
+              spaceBetween: 24,
+            },
+          }}
           modules={[FreeMode, Pagination, Autoplay]}
-          className="w-full "
+          className="w-full pb-2"
         >
           {reviews.map((review, i) => {
+            const reviewerName =
+              `${review?.user?.firstName || ""} ${
+                review?.user?.lastName || ""
+              }`.trim() || "Learner"
+            const reviewText = review?.review || ""
+            const rating = Number(review?.rating) || 0
+
             return (
               <SwiperSlide key={i}>
-                <div className="flex flex-col gap-3 bg-richblack-800 p-3 text-[14px] text-richblack-25">
-                  <div className="flex items-center gap-4">
+                <div className="flex min-h-[210px] flex-col justify-between gap-4 rounded-md border border-richblack-700 bg-richblack-800 p-4 text-sm text-richblack-25 shadow-[0_12px_24px_rgba(0,0,0,0.18)]">
+                  <div className="flex items-start gap-3">
                     <img
                       src={
                         review?.user?.image
                           ? review?.user?.image
-                          : `https://api.dicebear.com/5.x/initials/svg?seed=${review?.user?.firstName} ${review?.user?.lastName}`
+                          : `https://api.dicebear.com/5.x/initials/svg?seed=${reviewerName}`
                       }
-                      alt=""
-                      className="h-9 w-9 rounded-full object-cover"
+                      alt={reviewerName}
+                      className="h-11 w-11 flex-shrink-0 rounded-full object-cover"
                     />
-                    <div className="flex flex-col">
-                      <h1 className="font-semibold text-richblack-5">{`${review?.user?.firstName} ${review?.user?.lastName}`}</h1>
-                      <h2 className="text-[12px] font-medium text-richblack-500">
-                        {review?.course?.courseName}
+                    <div className="min-w-0 flex-1">
+                      <h1 className="truncate font-semibold leading-5 text-richblack-5">
+                        {reviewerName}
+                      </h1>
+                      <h2 className="review-line-clamp-2 mt-0.5 text-xs font-medium leading-4 text-richblack-400">
+                        {review?.course?.courseName || "Course learner"}
                       </h2>
                     </div>
                   </div>
-                  <p className="font-medium text-richblack-25">
-                    {review?.review.split(" ").length > truncateWords
-                      ? `${review?.review
+                  <p className="review-line-clamp-4 flex-1 font-medium leading-6 text-richblack-100">
+                    {reviewText.split(" ").length > truncateWords
+                      ? `${reviewText
                           .split(" ")
                           .slice(0, truncateWords)
                           .join(" ")} ...`
-                      : `${review?.review}`}
+                      : reviewText}
                   </p>
-                  <div className="flex items-center gap-2 ">
+                  <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-yellow-100">
-                      {review.rating.toFixed(1)}
+                      {rating.toFixed(1)}
                     </h3>
                     <ReactStars
                       count={5}
-                      value={review.rating}
-                      size={20}
+                      value={rating}
+                      size={18}
                       edit={false}
                       activeColor="#ffd700"
                       emptyIcon={<FaStar />}

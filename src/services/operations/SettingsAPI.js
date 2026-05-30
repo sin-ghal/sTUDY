@@ -12,17 +12,26 @@ const {
   DELETE_PROFILE_API,
 } = settingsEndpoints
 
+const getAuthToken = (token) => {
+  if (token) return token
+
+  const storedToken = localStorage.getItem("token")
+  return storedToken ? JSON.parse(storedToken) : null
+}
+
 export function updateDisplayPicture(token, formData) {
   return async (dispatch) => {
     const toastId = toast.loading("Loading...")
     try {
+      const authToken = getAuthToken(token)
+      if (!authToken) throw new Error("Please login again")
       const response = await apiConnector(
         "PUT",
         UPDATE_DISPLAY_PICTURE_API,
         formData,
         {
           "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${authToken}`,
         }
       )
       console.log(
@@ -48,22 +57,17 @@ export function updateProfile(token, formData) {
   return async (dispatch) => {
     const toastId = toast.loading("Loading...")
     try {
+      const authToken = getAuthToken(token)
+      if (!authToken) throw new Error("Please login again")
       const response = await apiConnector("PUT", UPDATE_PROFILE_API, formData, {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${authToken}`,
       })
       console.log("UPDATE_PROFILE_API API RESPONSE............", response)
 
       if (!response.data.success) {
         throw new Error(response.data.message)
       }
-      const currentUser = JSON.parse(localStorage.getItem("user")) || {}
-      const updatedUser = {
-        ...currentUser,
-        additionalDetails: {
-          ...currentUser.additionalDetails,
-          ...response.data.data,
-        },
-      }
+      const updatedUser = response.data.data
       const userImage = updatedUser.image
         ? updatedUser.image
         : `https://api.dicebear.com/5.x/initials/svg?seed=${updatedUser.firstName} ${updatedUser.lastName}`
@@ -83,8 +87,10 @@ export function updateProfile(token, formData) {
 export async function changePassword(token, formData) {
   const toastId = toast.loading("Loading...")
   try {
+    const authToken = getAuthToken(token)
+    if (!authToken) throw new Error("Please login again")
     const response = await apiConnector("POST", CHANGE_PASSWORD_API, formData, {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${authToken}`,
     })
     console.log("CHANGE_PASSWORD_API API RESPONSE............", response)
 
@@ -92,19 +98,27 @@ export async function changePassword(token, formData) {
       throw new Error(response.data.message)
     }
     toast.success("Password Changed Successfully")
+    return true
   } catch (error) {
     console.log("CHANGE_PASSWORD_API API ERROR............", error)
-    toast.error(error.response.data.message)
+    toast.error(
+      error.response?.data?.message ||
+        "Could Not Change Password. Please check backend route/controller."
+    )
+    return false
+  } finally {
+    toast.dismiss(toastId)
   }
-  toast.dismiss(toastId)
 }
 
 export function deleteProfile(token, navigate) {
   return async (dispatch) => {
     const toastId = toast.loading("Loading...")
     try {
+      const authToken = getAuthToken(token)
+      if (!authToken) throw new Error("Please login again")
       const response = await apiConnector("DELETE", DELETE_PROFILE_API, null, {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${authToken}`,
       })
       console.log("DELETE_PROFILE_API API RESPONSE............", response)
 
@@ -115,7 +129,7 @@ export function deleteProfile(token, navigate) {
       dispatch(logout(navigate))
     } catch (error) {
       console.log("DELETE_PROFILE_API API ERROR............", error)
-      toast.error("Could Not Delete Profile")
+      toast.error(error.response?.data?.message || "Could Not Delete Profile")
     }
     toast.dismiss(toastId)
   }

@@ -1,6 +1,8 @@
 // Icons Import
 import { FaArrowRight } from "react-icons/fa"
-import { Link } from "react-router-dom"
+import { useSelector } from "react-redux"
+import { useNavigate } from "react-router-dom"
+import toast from "react-hot-toast"
 
 // Image and Video Import
 import Banner from "../assets/Images/banner.mp4"
@@ -14,21 +16,40 @@ import HighlightText from "../components/core/HomePage/HighlightText"
 import InstructorSection from "../components/core/HomePage/InstructorSection"
 import LearningLanguageSection from "../components/core/HomePage/LearningLanguageSection"
 import TimelineSection from "../components/core/HomePage/TimelineSection"
+import { ACCOUNT_TYPE } from "../utils/constants"
 
 function Home() {
+  const navigate = useNavigate()
+  const { token } = useSelector((state) => state.auth)
+  const { user } = useSelector((state) => state.profile)
+
+  const handleTeachingClick = () => {
+    if (!token) {
+      navigate("/signup")
+      return
+    }
+
+    if (user?.accountType === ACCOUNT_TYPE.INSTRUCTOR) {
+      navigate("/dashboard/add-course")
+      return
+    }
+
+    toast.error("Please login as instructor first")
+  }
+
   return (
     <div>
       {/* Section 1 */}
       <div className="relative mx-auto flex w-11/12 max-w-maxContent flex-col items-center justify-between gap-8 text-white">
         {/* Become a Instructor Button */}
-        <Link to={"/signup"}>
+        <button type="button" onClick={handleTeachingClick}>
           <div className="group mx-auto mt-16 w-fit rounded-full bg-richblack-800 p-1 font-bold text-richblack-200 drop-shadow-[0_1.5px_rgba(255,255,255,0.25)] transition-all duration-200 hover:scale-95 hover:drop-shadow-none">
             <div className="flex flex-row items-center gap-2 rounded-full px-10 py-[5px] transition-all duration-200 group-hover:bg-richblack-900">
               <p>Become an Instructor</p>
               <FaArrowRight />
             </div>
           </div>
-        </Link>
+        </button>
 
         {/* Heading */}
         <div className="text-center text-4xl font-semibold">
@@ -46,10 +67,10 @@ function Home() {
 
         {/* CTA Buttons */}
         <div className="mt-8 flex flex-row gap-7">
-          <CTAButton active={true} linkto={"/signup"}>
+          <CTAButton active={true} linkto={"/about"}>
             Learn More
           </CTAButton>
-          <CTAButton active={false} linkto={"/login"}>
+          <CTAButton active={false} linkto={"/contact"}>
             Book a Demo
           </CTAButton>
         </div>
@@ -82,12 +103,12 @@ function Home() {
             }
             ctabtn1={{
               btnText: "Try it Yourself",
-              link: "/signup",
+              link: "/catalog",
               active: true,
             }}
             ctabtn2={{
               btnText: "Learn More",
-              link: "/signup",
+              link: "/about",
               active: false,
             }}
             codeColor={"text-yellow-25"}
@@ -111,12 +132,12 @@ function Home() {
             }
             ctabtn1={{
               btnText: "Continue Lesson",
-              link: "/signup",
+              link: "/catalog",
               active: true,
             }}
             ctabtn2={{
               btnText: "Learn More",
-              link: "/signup",
+              link: "/about",
               active: false,
             }}
             codeColor={"text-white"}
@@ -136,13 +157,13 @@ function Home() {
           <div className="mx-auto flex w-11/12 max-w-maxContent flex-col items-center justify-between gap-8">
             <div className="lg:h-[150px]"></div>
             <div className="flex flex-row gap-7 text-white lg:mt-8">
-              <CTAButton active={true} linkto={"/signup"}>
+              <CTAButton active={true} linkto={"/catalog"}>
                 <div className="flex items-center gap-2">
                   Explore Full Catalog
                   <FaArrowRight />
                 </div>
               </CTAButton>
-              <CTAButton active={false} linkto={"/login"}>
+              <CTAButton active={false} linkto={"/about"}>
                 Learn More
               </CTAButton>
             </div>
@@ -162,7 +183,7 @@ function Home() {
                 be a competitive specialist requires more than professional
                 skills.
               </div>
-              <CTAButton active={true} linkto={"/signup"}>
+              <CTAButton active={true} linkto={"/about"}>
                 <div className="">Learn More</div>
               </CTAButton>
             </div>

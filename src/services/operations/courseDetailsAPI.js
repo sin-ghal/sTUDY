@@ -23,8 +23,8 @@ const {
   LECTURE_COMPLETION_API,
 } = courseEndpoints
 
-export const getAllCourses = async () => {
-  const toastId = toast.loading("Loading...")
+export const getAllCourses = async ({ showToast = true } = {}) => {
+  const toastId = showToast ? toast.loading("Loading...") : null
   let result = []
   try {
     const response = await apiConnector("GET", GET_ALL_COURSE_API)
@@ -36,7 +36,7 @@ export const getAllCourses = async () => {
     console.log("GET_ALL_COURSE_API API ERROR............", error)
     toast.error(error.message)
   }
-  toast.dismiss(toastId)
+  if (toastId) toast.dismiss(toastId)
   return result
 }
 
@@ -109,8 +109,9 @@ export const editCourseDetails = async (data, token) => {
   let result = null
   const toastId = toast.loading("Loading...")
   try {
+    const isFormData = data instanceof FormData
     const response = await apiConnector("POST", EDIT_COURSE_API, data, {
-      "Content-Type": "multipart/form-data",
+      ...(isFormData && { "Content-Type": "multipart/form-data" }),
       Authorization: `Bearer ${token}`,
     })
     console.log("EDIT COURSE API RESPONSE............", response)
@@ -140,7 +141,7 @@ export const createSection = async (data, token) => {
       throw new Error("Could Not Create Section")
     }
     toast.success("Course Section Created")
-    result = response?.data?.updatedCourse
+    result = response?.data?.data
   } catch (error) {
     console.log("CREATE SECTION API ERROR............", error)
     toast.error(error.message)

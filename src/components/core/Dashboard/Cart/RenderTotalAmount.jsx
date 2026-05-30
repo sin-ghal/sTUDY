@@ -1,5 +1,6 @@
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
+import { toast } from "react-hot-toast"
 
 import IconBtn from "../../../common/IconBtn"
 import { buyCourse } from "../../../../services/operations/studentFeaturesAPI"
@@ -12,6 +13,11 @@ export default function RenderTotalAmount() {
   const dispatch = useDispatch()
 
   const handleBuyCourse = () => {
+    if (!cart.length) {
+      toast.error("Your cart is empty")
+      return
+    }
+
     const courses = cart.map((course) => course._id)
     buyCourse(token, courses, user, navigate, dispatch)
   }
