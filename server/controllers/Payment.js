@@ -230,11 +230,21 @@ exports.verifySignature = async (req, res) => {
             { new: true }
         );
 
-        await mailSender(
-            existingUser.email,
-            "Congratulations!",
-            "You are finally onboarded to the new course"
-        );
+        // await mailSender(
+        //     existingUser.email,
+        //     "Congratulations!",
+        //     "You are finally onboarded to the new course"
+        // );
+        console.log("Reached purchase mail code");
+console.log("Sending purchase email to:", existingUser.email);
+
+const emailResp = await mailSender(
+    existingUser.email,
+    "Congratulations!",
+    "You are finally onboarded to the new course"
+);
+
+console.log("Purchase email response:", emailResp);
 
         return res.status(200).json({
             success: true,

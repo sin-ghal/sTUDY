@@ -20,7 +20,8 @@ exports.mailSender = async(email,title,body) => {
         return info;
     }
     catch(e){
-        console.log(e);
-    }
+    console.log("MAIL SEND ERROR:", e.message);
+    throw e;
+}
 }
 

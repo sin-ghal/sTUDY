@@ -1,5 +1,5 @@
 // Icons Import
-import { FaArrowRight } from "react-icons/fa"
+import { FaArrowRight, FaBookOpen } from "react-icons/fa"
 import { useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
@@ -41,9 +41,27 @@ function Home() {
     <div>
       {/* Section 1 */}
       <div className="relative mx-auto flex w-11/12 max-w-maxContent flex-col items-center justify-between gap-8 text-white">
+        {token && user?.accountType === ACCOUNT_TYPE.STUDENT && (
+          <button
+            type="button"
+            onClick={() => navigate("/dashboard/enrolled-courses")}
+            className="group mx-auto mt-16 flex w-fit items-center gap-3 rounded-full border border-richblack-600 bg-richblack-800 px-6 py-2 font-semibold text-richblack-100 transition-all duration-200 hover:scale-95 hover:border-richblack-400 hover:bg-richblack-900 hover:text-richblack-5"
+          >
+            <FaBookOpen className="text-yellow-100 transition-colors duration-200 group-hover:text-yellow-50" />
+            <span>Enrolled Courses</span>
+            <FaArrowRight className="text-richblack-300 transition-all duration-200 group-hover:translate-x-1 group-hover:text-richblack-50" />
+          </button>
+        )}
+
         {/* Become a Instructor Button */}
         <button type="button" onClick={handleTeachingClick}>
-          <div className="group mx-auto mt-16 w-fit rounded-full bg-richblack-800 p-1 font-bold text-richblack-200 drop-shadow-[0_1.5px_rgba(255,255,255,0.25)] transition-all duration-200 hover:scale-95 hover:drop-shadow-none">
+          <div
+            className={`group mx-auto w-fit rounded-full bg-richblack-800 p-1 font-bold text-richblack-200 drop-shadow-[0_1.5px_rgba(255,255,255,0.25)] transition-all duration-200 hover:scale-95 hover:drop-shadow-none ${
+              token && user?.accountType === ACCOUNT_TYPE.STUDENT
+                ? "mt-0"
+                : "mt-16"
+            }`}
+          >
             <div className="flex flex-row items-center gap-2 rounded-full px-10 py-[5px] transition-all duration-200 group-hover:bg-richblack-900">
               <p>Become an Instructor</p>
               <FaArrowRight />
