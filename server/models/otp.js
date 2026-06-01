@@ -22,7 +22,7 @@ async function sendVerificationEmail(email, otp) {
     try {
         await mailSender(
             email,
-            "Verification Email From StudyNotion",
+            "Verification Email From ByteLearn",
             `<h2>Your OTP is ${otp}</h2>`
         )
     } catch (error) {

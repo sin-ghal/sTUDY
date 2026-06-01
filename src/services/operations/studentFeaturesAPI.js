@@ -12,6 +12,18 @@ const RAZORPAY_KEY =
     process.env.REACT_APP_RAZORPAY_KEY ||
     process.env.REACT_APP_RAZORPAY_KEY_ID ||
     process.env.RAZORPAY_KEY
+const getRazorpayLogoUrl = () => {
+    const configuredLogoUrl = process.env.REACT_APP_RAZORPAY_LOGO_URL
+    if (configuredLogoUrl?.startsWith("https://")) {
+        return configuredLogoUrl
+    }
+
+    if (window.location.protocol === "https:") {
+        return new URL(rzpLogo, window.location.origin).href
+    }
+
+    return undefined
+}
 
 function loadScript(src) {
     return new Promise((resolve) => {
@@ -95,9 +107,8 @@ export async function buyCourse(token, courses, userDetails, navigate, dispatch)
             currency: orderData.currency,
             amount: `${orderData.amount}`,
             order_id:orderData.id,
-            name:"StudyNotion",
+            name:"ByteLearn",
             description: "Thank You for Purchasing the Course",
-            image:rzpLogo,
             prefill: {
                 name:`${userDetails.firstName}`,
                 email:userDetails.email
@@ -106,6 +117,10 @@ export async function buyCourse(token, courses, userDetails, navigate, dispatch)
                 //verifyPayment
                 verifyPayment({...response, courseId}, token, navigate, dispatch);
             }
+        }
+        const logoUrl = getRazorpayLogoUrl()
+        if (logoUrl) {
+            options.image = logoUrl
         }
         //miss hogya tha 
         const paymentObject = new window.Razorpay(options);
